@@ -1,0 +1,12 @@
+{
+  "name": "jhoel-donation-stripe",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "validate": "node scripts/validate-artifact.mjs",
+    "build:vercel": "node scripts/build-vercel.mjs",
+    "validate:vercel": "node scripts/validate-vercel.mjs",
+    "build:pages": "python3 scripts/build-pages.py"
+  }
+}
