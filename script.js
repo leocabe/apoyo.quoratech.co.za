@@ -18,13 +18,18 @@ customInput.addEventListener('input',()=>{amountButtons.forEach(item=>item.class
 const toast=document.querySelector('#toast');
 const showToast=(message,duration=3600)=>{toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),duration)};
 const selectedAmount=()=>{const preset=document.querySelector('.amounts button.selected');return customInput.value?Number(customInput.value):Number(preset?.textContent.replace('$','')||0)};
-continueButton.addEventListener('click',()=>{
-  const paymentLink=window.SITE_CONFIG?.stripePaymentLink?.trim();
-  if(!paymentLink){showToast('Las donaciones aún no están disponibles. Vuelve más tarde.',5000);return}
-  let target;
-  try{target=new URL(paymentLink)}catch{showToast('El enlace de pago no es válido.');return}
-  if(target.protocol!=='https:'||target.hostname!=='buy.stripe.com'){showToast('El enlace de Stripe no es válido.');return}
-  window.location.assign(target.href);
+continueButton.addEventListener('click',async()=>{
+  const amount=selectedAmount();
+  if(!Number.isFinite(amount)||amount<1||amount>5000){showToast('Elige un valor entre $1 y $5,000.');return}
+  const originalLabel=continueButton.textContent;
+  continueButton.disabled=true;
+  continueButton.textContent='Abriendo Stripe…';
+  try{
+    const response=await fetch('/api/create-checkout-session',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({amount})});
+    const data=await response.json();
+    if(!response.ok||!data.url)throw new Error(data.error||'No fue posible iniciar el pago.');
+    window.location.assign(data.url);
+  }catch(error){showToast(error.message||'No fue posible iniciar el pago.');continueButton.disabled=false;continueButton.textContent=originalLabel}
 });
 const paymentState=new URLSearchParams(window.location.search).get('donation');
 if(paymentState==='success')showToast('¡Gracias! Stripe confirmó el regreso del Checkout.',5000);
