@@ -4,7 +4,14 @@ list.innerHTML=donors.map(([name,amount,ago])=>`<li><span class="donor-left"><sp
 
 const checkoutUrl='https://universepay.online/pay/73d5cea3-fff1-4335-981f-4a7b0bebafc8';
 const modal=document.querySelector('#donation-modal');
-const openModal=()=>{modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'};
+const openModal=()=>{
+  amountButtons.forEach(button=>button.classList.toggle('selected',button.textContent.trim()==='$25'));
+  customInput.value='';
+  continueButton.textContent='Continuar con $25';
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+};
 const closeModal=()=>{modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.style.overflow=''};
 document.querySelectorAll('[data-donate]').forEach(button=>button.addEventListener('click',openModal));
 document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',closeModal));
@@ -19,6 +26,10 @@ continueButton.addEventListener('click',()=>{
   const amount=Number(customInput.value.trim().replace(',','.')||preset?.textContent.replace('$','')||0);
   if(!Number.isFinite(amount)||amount<15){showToast('La donación mínima es de $15.');return}
   const destination=new URL(checkoutUrl);
+  const trackingKeys=new Set(['fbclid','gclid','gbraid','wbraid','ttclid','msclkid','src','sck','xcod']);
+  new URLSearchParams(window.location.search).forEach((value,key)=>{
+    if(key.startsWith('utm_')||trackingKeys.has(key))destination.searchParams.set(key,value);
+  });
   destination.searchParams.set('amount',amount.toFixed(2));
   window.location.assign(destination.toString());
 });
