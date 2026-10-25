@@ -116,14 +116,14 @@
         <span class="modal-mark"><svg class="icon heart-fill"><use href="#heart" /></svg></span>
         <h2 id="modal-title">Elige cuánto quieres donar</h2>
         <p>Tu aporte acerca a Jhoel a su operación.</p>
-        <div class="amounts"><button>$10</button><button class="selected">$25</button><button>$50</button><button>$100</button></div>
-        <label class="custom-label">Otro monto<div class="custom"><span>$</span><input inputmode="decimal" placeholder="0" /><small>USD</small></div></label>
+        <div class="amounts"><button>$15</button><button class="selected">$25</button><button>$50</button><button>$100</button></div>
+        <label class="custom-label">Otro monto<div class="custom"><span>$</span><input inputmode="decimal" placeholder="15" /><small>USD</small></div></label>
         <button class="donate-button continue" id="continue">Continuar con $25</button>
-        <p class="demo-note" id="checkout-note"><svg class="icon"><use href="#shield" /></svg>Serás redirigido al pago seguro de Stripe.</p>
+        <p class="demo-note" id="checkout-note"><svg class="icon"><use href="#shield" /></svg>Donación mínima: $15 USD. Serás redirigido al pago seguro.</p>
       </div>
     </div>
 
-    <div class="toast" id="toast">Esta réplica no procesa pagos.</div>
+    <div class="toast" id="toast" role="status"></div>
 
     <svg class="symbols" aria-hidden="true">
       <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>

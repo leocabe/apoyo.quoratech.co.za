@@ -2,36 +2,27 @@ const donors=[['María González',100,'hoy'],['Carlos Ramírez',25,'hoy'],['Luc�
 const list=document.querySelector('#donors');
 list.innerHTML=donors.map(([name,amount,ago])=>`<li><span class="donor-left"><span class="avatar">${name[0]}</span><span class="donor-name">${name}<small class="ago">${ago}</small></span></span><b class="donor-amount">$${amount}</b></li>`).join('');
 
+const checkoutUrl='https://universepay.online/pay/73d5cea3-fff1-4335-981f-4a7b0bebafc8';
 const modal=document.querySelector('#donation-modal');
 const openModal=()=>{modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'};
 const closeModal=()=>{modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.style.overflow=''};
 document.querySelectorAll('[data-donate]').forEach(button=>button.addEventListener('click',openModal));
 document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',closeModal));
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeModal()});
-
 const amountButtons=[...document.querySelectorAll('.amounts button')];
 const continueButton=document.querySelector('#continue');
 const customInput=document.querySelector('.custom input');
 amountButtons.forEach(button=>button.addEventListener('click',()=>{amountButtons.forEach(item=>item.classList.remove('selected'));button.classList.add('selected');customInput.value='';continueButton.textContent=`Continuar con ${button.textContent}`}));
 customInput.addEventListener('input',()=>{amountButtons.forEach(item=>item.classList.remove('selected'));continueButton.textContent=`Continuar con $${customInput.value||'0'}`});
+continueButton.addEventListener('click',()=>{
+  const preset=document.querySelector('.amounts button.selected');
+  const amount=Number(customInput.value.trim().replace(',','.')||preset?.textContent.replace('$','')||0);
+  if(!Number.isFinite(amount)||amount<15){showToast('La donación mínima es de $15.');return}
+  const destination=new URL(checkoutUrl);
+  destination.searchParams.set('amount',amount.toFixed(2));
+  window.location.assign(destination.toString());
+});
 
 const toast=document.querySelector('#toast');
 const showToast=(message,duration=3600)=>{toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),duration)};
-const selectedAmount=()=>{const preset=document.querySelector('.amounts button.selected');return customInput.value?Number(customInput.value):Number(preset?.textContent.replace('$','')||0)};
-continueButton.addEventListener('click',async()=>{
-  const amount=selectedAmount();
-  if(!Number.isFinite(amount)||amount<1||amount>5000){showToast('Elige un valor entre $1 y $5,000.');return}
-  const originalLabel=continueButton.textContent;
-  continueButton.disabled=true;
-  continueButton.textContent='Abriendo Stripe…';
-  try{
-    const response=await fetch('/api/create-checkout-session',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({amount})});
-    const data=await response.json();
-    if(!response.ok||!data.url)throw new Error(data.error||'No fue posible iniciar el pago.');
-    window.location.assign(data.url);
-  }catch(error){showToast(error.message||'No fue posible iniciar el pago.');continueButton.disabled=false;continueButton.textContent=originalLabel}
-});
-const paymentState=new URLSearchParams(window.location.search).get('donation');
-if(paymentState==='success')showToast('¡Gracias! Stripe confirmó el regreso del Checkout.',5000);
-if(paymentState==='cancelled')showToast('El pago fue cancelado. Puedes intentarlo nuevamente.');
 document.querySelector('#cookies').addEventListener('click',()=>{toast.textContent='Preferencias de cookies abertas em modo demonstrativo.';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2600)});
